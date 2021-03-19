@@ -3,16 +3,25 @@ import os
 import sys
 import time
 import sysv_ipc
+from multiprocessing import Process, Manager
 
-key = 706
+key = 666
+energie = 0
 
-
-def user():
+def user(lst):
+    choix = 0
     answer = 0
-    while answer not in range(1, 100):
-        print("CB d'energie voulez vous")
-        answer = int(input())
-    return answer
+    print("Que voulez-vous faire ?")
+    print("1. Vendre")
+    print("2. Acheter")
+    choix = int(input())
+    if choix == 1:
+        print("toto")
+    elif choix == 2:
+        while answer not in range(1, 100):
+            print("Combien d'énergie voulez vous")
+            answer = int(input())
+        return answer
 
 
 try:
@@ -22,13 +31,24 @@ except:
     sys.exit(1)
 
 
-t = user()
+if __name__ == "__main__":
+    while True:
+        with Manager() as manager:
+                lst = manager.list()
 
+                child = Process(target=user, args=(lst))
+                child.start()
+                child.join()
 
-pid = t
-m = str(t).encode()
-mq.send(m)
-pid += 3
-m, pid = mq.receive(type=pid)
-dt = m.decode()
-print("Server response:", dt)
+                print("PID fils : " + str(os.getpid()))
+                print("PID parent : " + str(os.getppid()))
+
+                t = user(lst)
+                print(lst)
+                pid = t
+                m = str(t).encode()
+                mq.send(m)
+                pid += 3
+                m, pid = mq.receive(type=pid)
+                dt = m.decode()
+                print("Energie reçue :", dt)
