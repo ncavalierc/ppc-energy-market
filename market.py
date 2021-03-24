@@ -9,22 +9,28 @@ key = 666
 # ipcrm -Q 666
 # pour kill la message queue
 energie = 10000
+prix = 2
 
 def worker(mq, m):
     global energie
     print("Starting thread:", threading.current_thread().name)
-    pid = int(m.decode())
-    print("Requete de : " + str(pid))
-    t = pid + 3
-    if pid > energie:
-        message = energie
-        energie -= message
-    if pid <= energie:
-        message = pid
-        energie -= message
+    data = m.decode()
+    data = data.split(",")
+    print(data)
+    demande = int(data[0])
+    money = int(data[1])
+    print("Requete de : " + str(demande))
+    if money > prix * demande:
+        t = demande + 3
+        message = demande
+    else:
+        message = demande / prix
     
-    message = str(message).encode()
-    mq.send(message, type=t)
+    
+    message = str(message)
+    prix_encoded = str(prix)
+    data = str(message) + "," + str(prix_encoded)
+    mq.send(data.encode(), type=t)
     print("Ending thread:", threading.current_thread().name)
 
 

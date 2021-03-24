@@ -6,7 +6,6 @@ import sysv_ipc
 from multiprocessing import Process, Manager
 
 key = 666
-energie = 0
 
 def user(lst):
     print("PID fils home: " + str(os.getpid()))
@@ -25,14 +24,29 @@ def user(lst):
             answer = 5
         return answer
     '''
+    energie = 0
+    wallet = 100
+    
+    demande = 5
 
-    pid = 5
-    m = str(pid).encode()
-    mq.send(m)
-    pid += 3
-    m, pid = mq.receive(type=pid)
-    dt = m.decode()
-    print("Energie reçue :", dt)
+    m = demande
+    w = wallet
+    data = str(m)+ "," + str(w)
+    print("1", data)
+    mq.send(str(data).encode())
+    print("2")
+    demande += 3
+    m, demande = mq.receive(type=demande)
+    print("3")
+    recu = m.decode()
+    recu = recu.split(",")
+    print("4", recu)
+    quantite_recue = int(recu[0])
+    prix = int(recu[1])
+    wallet -= quantite_recue * prix
+    energie += quantite_recue
+    print("Energie reçue : ", quantite_recue, "Prix unitaire : ", prix)
+    time.sleep(1)
 
 
 try:
@@ -45,7 +59,6 @@ except:
 if __name__ == "__main__":
     while True:
         with Manager() as manager:
-            #time.sleep(1)
             lst = manager.list()
 
             child = Process(target=user, args=(lst,))
@@ -54,3 +67,4 @@ if __name__ == "__main__":
             print("PID parent home: " + str(os.getpid())) 
 
             child.join()
+        print("fini")
