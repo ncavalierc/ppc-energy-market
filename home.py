@@ -10,6 +10,7 @@ energie = 0
 
 def user(lst):
     print("PID fils home: " + str(os.getpid()))
+    '''
     choix = 0
     answer = 0
     print("Que voulez-vous faire ?")
@@ -23,7 +24,15 @@ def user(lst):
             print("Combien d'énergie voulez vous")
             answer = 5
         return answer
-    
+    '''
+
+    pid = 5
+    m = str(pid).encode()
+    mq.send(m)
+    pid += 3
+    m, pid = mq.receive(type=pid)
+    dt = m.decode()
+    print("Energie reçue :", dt)
 
 
 try:
@@ -36,22 +45,12 @@ except:
 if __name__ == "__main__":
     while True:
         with Manager() as manager:
-                lst = manager.list()
+            time.sleep(1)
+            lst = manager.list()
 
-                child = Process(target=user, args=(lst,))
-                child.start()
-                
+            child = Process(target=user, args=(lst,))
+            child.start()
 
-                print("PID parent home: " + str(os.getpid()))
+            print("PID parent home: " + str(os.getpid())) 
 
-                t = user(lst)
-                print(lst)
-                pid = t
-                m = str(t).encode()
-                mq.send(m)
-                pid += 3
-                m, pid = mq.receive(type=pid)
-                dt = m.decode()
-                print("Energie reçue :", dt)
-
-                child.join()
+            child.join()
