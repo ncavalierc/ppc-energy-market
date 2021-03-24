@@ -7,7 +7,7 @@ import threading
 key = 666
 # ipcrm -Q 666
 # pour kill la message queue
-energie = 12
+energie = 10000
 
 def worker(mq, m):
     global energie
@@ -19,7 +19,7 @@ def worker(mq, m):
         message = energie
         energie -= message
     if pid <= energie:
-        message = m
+        message = pid
         energie -= message
     
     message = str(message).encode()

@@ -9,19 +9,21 @@ key = 666
 energie = 0
 
 def user(lst):
+    print("PID fils home: " + str(os.getpid()))
     choix = 0
     answer = 0
     print("Que voulez-vous faire ?")
     print("1. Vendre")
     print("2. Acheter")
-    choix = int(input())
+    choix = 2
     if choix == 1:
         print("toto")
     elif choix == 2:
         while answer not in range(1, 100):
             print("Combien d'énergie voulez vous")
-            answer = int(input())
+            answer = 5
         return answer
+    
 
 
 try:
@@ -36,12 +38,11 @@ if __name__ == "__main__":
         with Manager() as manager:
                 lst = manager.list()
 
-                child = Process(target=user, args=(lst))
+                child = Process(target=user, args=(lst,))
                 child.start()
-                child.join()
+                
 
-                print("PID fils : " + str(os.getpid()))
-                print("PID parent : " + str(os.getppid()))
+                print("PID parent home: " + str(os.getpid()))
 
                 t = user(lst)
                 print(lst)
@@ -52,3 +53,5 @@ if __name__ == "__main__":
                 m, pid = mq.receive(type=pid)
                 dt = m.decode()
                 print("Energie reçue :", dt)
+
+                child.join()
