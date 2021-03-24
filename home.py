@@ -33,7 +33,7 @@ def user(lst):
     w = wallet
     data = str(m)+ "," + str(w)
     print("1", data)
-    mq.send(str(data).encode())
+    mq.send(str(data).encode(), type=1)
     print("2")
     demande += 3
     m, demande = mq.receive(type=demande)

@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     with concurrent.futures.ThreadPoolExecutor(max_workers = 4) as executor:
         while True:
-            m, t = mq.receive()
+            m, t = mq.receive(type=1)
             executor.submit(worker, mq, m)
 
     print("Terminating energy market.")
