@@ -45,7 +45,7 @@ except:
 if __name__ == "__main__":
     while True:
         with Manager() as manager:
-            time.sleep(1)
+            #time.sleep(1)
             lst = manager.list()
 
             child = Process(target=user, args=(lst,))

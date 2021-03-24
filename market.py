@@ -3,6 +3,7 @@ import sys
 import time
 import sysv_ipc
 import threading
+import concurrent.futures
 
 key = 666
 # ipcrm -Q 666
@@ -38,12 +39,10 @@ if __name__ == "__main__":
 
     print("Starting energy market.")
 
-    threads = []
-    while True:
-        m, t = mq.receive()
-        p = threading.Thread(target=worker, args=(mq, m))
-        p.start()
-        threads.append(p)
+    with concurrent.futures.ThreadPoolExecutor(max_workers = 4) as executor:
+        while True:
+            m, t = mq.receive()
+            executor.submit(worker, mq, m)
 
     print("Terminating energy market.")
     print("Ending thread:", threading.current_thread().name)
