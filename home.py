@@ -1,4 +1,3 @@
-
 import os
 import sys
 import time
@@ -12,18 +11,18 @@ import concurrent.futures
 key = 666
 maBarrier = threading.Barrier(1)
 
-def user(lst):
+def home(lst):
 
-    energie = 40
+    energie = 50
     wallet = 100000
     
     while True:
 
         print("energie", energie)
-        if energie > 50:
+        if energie > 75:
             print("PID fils home vente: " + str(os.getpid()))
             print("Vente")
-            demande = energie - 10
+            demande = int(energie / 3)
             m = demande
             w = wallet
             data = str(m)+ "," + str(w) + "," + str(1)
@@ -62,7 +61,7 @@ def user(lst):
         time.sleep(1)
 
 
-def temperature(lst, lock):
+def weather(lst, lock):
     while True:
         temperature = random.gauss(14,5)
         coef = 0
@@ -94,14 +93,13 @@ if __name__ == "__main__":
         lst = multiprocessing.Value('i', 1)
         lock = multiprocessing.Lock()
 
-        weather = Process(target=temperature, args=(lst, lock))
+        weather = Process(target=weather, args=(lst, lock))
         weather.start()
 
         for i in range(5):
-            child = Process(target=user, args=(lst,))
+            child = Process(target=home, args=(lst,))
             child.start()
 
         print("PID parent home: " + str(os.getpid())) 
         
         child.join()
-        print("fini")

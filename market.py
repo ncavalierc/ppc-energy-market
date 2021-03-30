@@ -1,9 +1,12 @@
-
 import sys
 import time
 import sysv_ipc
 import threading
 import concurrent.futures
+import signal
+import os
+import signal
+from multiprocessing import Process
 
 # ipcrm -Q 666
 # pour kill la message queue
@@ -53,6 +56,7 @@ def worker(mq, m):
 
     if maBarrier.wait() == 0:
         print("Quantité de demande : ", jour_J)
+
         '''if jour_J == 0:
             jour_J = 1
         if jour_0 == 0:
@@ -81,6 +85,18 @@ def worker(mq, m):
         jour_J = 0
         jour += 1
         print("Jour : ", jour)
+
+def handler(sig, frame):
+    if sig == signal.SIGUSR1:
+        os.kill(childPID, signal.SIGKILL)
+        print("Die, son!")
+    
+def external():
+    print("PID fils : " + str(os.getpid()))
+    time.sleep(1)
+    os.kill(os.getppid(), signal.SIGUSR1)
+    while True:
+        print("Get up dad!")
     
     
 if __name__ == "__main__":
@@ -91,6 +107,17 @@ if __name__ == "__main__":
     except:
         print("Message queue", key, "already exsits, terminating.")
         sys.exit(1)
+
+    
+    signal.signal(signal.SIGUSR1, handler)
+    print("PID parent : " + str(os.getpid()))
+    
+    childProcess = Process(target=external, args=())
+    childProcess.start()
+    
+    global childPID
+    childPID = childProcess.pid
+    childProcess.join()
 
     print("Starting energy market.")
 
