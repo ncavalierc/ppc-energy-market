@@ -26,12 +26,13 @@ def worker(mq, m):
     print("Starting thread:", threading.current_thread().name)
     data = m.decode()
     data = data.split(",")
-    print(data)
     demande = int(data[0])
     money = int(data[1])
-    print("Requete de : " + str(demande))
+    etat = int(data[2])
+    print("Requete du home : " + str(demande))
     if money > prix * demande:
         t = demande + 3
+        print("-------market------", t)
         message = demande
     else:
         message = demande / prix
@@ -41,25 +42,40 @@ def worker(mq, m):
     data = str(message) + "," + str(prix_encoded)
     mq.send(data.encode(), type=t)
 
-    jour_J += demande
+    if etat == 0:
+        jour_J += demande
+    if etat == 1:
+        jour_J -= demande
 
     maBarrier.wait()
     
     print("Ending thread:", threading.current_thread().name)
 
     if maBarrier.wait() == 0:
-        if jour_J > jour_0:
-            rapport = (jour_J / jour_0) / 10
+        print("Quantité de demande : ", jour_J)
+        '''if jour_J == 0:
+            jour_J = 1
+        if jour_0 == 0:
+            jour_0 = 1'
+            '''
+
+        print("jour J", jour_J)
+        print("Prix : ", prix)
+        prix += int(0.1 * jour_J)
+        print("Prix : ", prix)
+        
+        
+        '''if jour_J > jour_0:
+            rapport = (jour_J / jour_0) / 50
             tmp = prix
-            prix = int(prix_1 + prix_1 * rapport)
+            prix = int(prix_1 + prix_1 * abs(rapport))
             prix_1 = tmp
         elif jour_J < jour_0:
-            rapport = (jour_0 / jour_J) / 10
+            rapport = (jour_0 / jour_J) / 50
             tmp = prix
-            prix = int(prix_1 - prix_1 * rapport)
-            prix_1 = tmp
+            prix = int(prix_1 - prix_1 * abs(rapport))
+            prix_1 = tmp'''
         
-        print("Prix : ", prix)
 
         jour_0 = jour_J
         jour_J = 0
