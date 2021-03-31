@@ -11,74 +11,89 @@ import concurrent.futures
 key = 666
 maBarrier = threading.Barrier(1)
 
+
 def home(lst):
 
     energie = 50
     wallet = 100000
-    
+
     while True:
 
-        print("energie", energie)
         if energie > 75:
-            print("PID fils home vente: " + str(os.getpid()))
-            print("Vente")
+            # création de la demande
             demande = int(energie / 3)
             m = demande
             w = wallet
-            data = str(m)+ "," + str(w) + "," + str(1)
+            data = str(m) + "," + str(w) + "," + str(1)
             mq.send(str(data).encode(), type=1)
+
+            # Reception de la transactions
             demande += 3
             m, demande = mq.receive(type=demande)
+
+            # Gestion de la reception
             recu = m.decode()
             recu = recu.split(",")
             quantite_recue = int(recu[0])
             prix = int(recu[1])
             wallet += (demande-3) * prix
             energie -= demande - 3
-            print("Energie reçue : ", quantite_recue, "Prix unitaire : ", prix)
+
+            print("La maison ", str(os.getpid()), "a vendu : ",
+                  quantite_recue, " d'énergies pour un prix unitaire de : ", prix)
             maBarrier.wait()
 
         else:
-            print("PID fils home achat: " + str(os.getpid()))
-            print("Achat")
+            # création de la demande
             demande = int(10*random.random()) * int(lst.value) + 1
             m = demande
             w = wallet
-            data = str(m)+ "," + str(w) + "," + str(0)
+            data = str(m) + "," + str(w) + "," + str(0)
             mq.send(str(data).encode(), type=1)
+
+            # Reception de la transactions
             demande += 3
             m, demande = mq.receive(type=demande)
+
+            # Gestion de la reception
             recu = m.decode()
             recu = recu.split(",")
             quantite_recue = int(recu[0])
             prix = int(recu[1])
             wallet -= quantite_recue * prix
             energie += quantite_recue
-            print("Energie reçue : ", quantite_recue, "Prix unitaire : ", prix)
-            maBarrier.wait()
 
+            print("La maison ", str(os.getpid()), "a acheté : ",
+                  quantite_recue, " d'énergies pour un prix unitaire de : ", prix)
+            maBarrier.wait()
 
         time.sleep(1)
 
+# Gestion des conditions climatiques qui influence la demande d'énergie
 
-def weather(lst, lock):
+
+def temperature(lst, lock):
     while True:
-        temperature = random.gauss(14,5)
+        temperature = random.gauss(14, 5)
         coef = 0
         if temperature < 10:
             coef = 2
+            print("aujourd'hui il fait : ", temperature,
+                  "°C, énormement de consomation")
         elif temperature < 20:
             coef = 1
+            print("aujourd'hui il fait : ", temperature,
+                  "°C, consomation normale")
         elif temperature >= 20:
             coef = 0.5
-
-        print("coeff température", coef)
-
+            print("aujourd'hui il fait : ", temperature,
+                  "°C, très peu de consomation")
+        # Chargement du coeficient liée à la température dans la mémoire partagée avec mutex
         with lst.get_lock():
-                    lst.value = int(coef)
-        
+            lst.value = int(coef)
+
         time.sleep(1)
-        
+
 
 try:
     mq = sysv_ipc.MessageQueue(key)
@@ -88,18 +103,19 @@ except:
 
 
 if __name__ == "__main__":
+
+    # Manager qui gère la mémoire partagé
     with Manager() as manager:
-        
         lst = multiprocessing.Value('i', 1)
         lock = multiprocessing.Lock()
 
-        weather = Process(target=weather, args=(lst, lock))
+        # Création du processus fils de température
+        weather = Process(target=temperature, args=(lst, lock))
         weather.start()
 
+        # Création de cinq maisons
         for i in range(5):
             child = Process(target=home, args=(lst,))
             child.start()
 
-        print("PID parent home: " + str(os.getpid())) 
-        
         child.join()
