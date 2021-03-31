@@ -13,12 +13,15 @@ maBarrier = threading.Barrier(1)
 
 
 def home(lst):
-
+    production_home = int(10*random.random())
     energie = 50
     wallet = 100000
 
-    while True:
+    print("La maison ", str(os.getpid()), "a une capacité de production d'énergie de : ",
+          production_home)
 
+    while True:
+        energie += production_home
         if energie > 75:
             # création de la demande
             demande = int(energie / 3)
